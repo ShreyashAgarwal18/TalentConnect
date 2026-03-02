@@ -3,6 +3,7 @@ package com.Project.TalentConnect.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -34,9 +35,11 @@ public class UserEntity {
 
     private String phone;
 
-
+    @Column(nullable = false)
     private Boolean enabled = true;
 
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt =  LocalDateTime.now();
 
 }
