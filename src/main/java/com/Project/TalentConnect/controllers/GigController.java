@@ -1,5 +1,7 @@
 package com.Project.TalentConnect.controllers;
 
+import com.Project.TalentConnect.DTO.GigRequestDto;
+import com.Project.TalentConnect.DTO.GigResponseDto;
 import com.Project.TalentConnect.entity.GigEntity;
 import com.Project.TalentConnect.services.GigService;
 import lombok.RequiredArgsConstructor;
@@ -16,32 +18,32 @@ public class GigController {
 
     //create gig
     @PostMapping("/freelancer/{freelancerId}")
-    public GigEntity createGig(@PathVariable Long freelancerId,
-                               @RequestBody GigEntity gig){
+    public GigResponseDto createGig(@PathVariable Long freelancerId,
+                                    @RequestBody GigRequestDto gig){
         return gigService.createGig(freelancerId,gig);
     }
 
     //get all gigs
     @GetMapping
-    public List<GigEntity> getAllGigs(){
+    public List<GigResponseDto> getAllGigs(){
         return gigService.getAllGigs();
     }
 
     //get gig by id
     @GetMapping("/{id}")
-    public GigEntity getGigById(@PathVariable Long id){
+    public GigResponseDto getGigById(@PathVariable Long id){
         return gigService.getGigById(id);
     }
 
     //get gig by freelancer
     @GetMapping("/freelancer/{freelancerId}")
-    public List<GigEntity> getGigsByFreelancer(@PathVariable Long freelancerId){
+    public List<GigResponseDto> getGigsByFreelancer(@PathVariable Long freelancerId){
         return gigService.getGigsByFreelancer(freelancerId);
     }
 
     //get gig by category
     @GetMapping("/category/{category}")
-    public List<GigEntity> getGigsByCategory(@PathVariable String category){
+    public List<GigResponseDto> getGigsByCategory(@PathVariable String category){
         return gigService.getGigsByCategory(category);
     }
 

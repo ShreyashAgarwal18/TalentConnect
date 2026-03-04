@@ -1,6 +1,7 @@
 package com.Project.TalentConnect.controllers;
 
-import com.Project.TalentConnect.entity.UserEntity;
+import com.Project.TalentConnect.DTO.UserRequestDto;
+import com.Project.TalentConnect.DTO.UserResponseDto;
 import com.Project.TalentConnect.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,19 +17,19 @@ public class UserController {
 
     //register new user
     @PostMapping("/register")
-    public UserEntity registerUser(@RequestBody UserEntity user){
-        return userService.registerUser(user);
+    public UserResponseDto registerUser(@RequestBody UserRequestDto request){
+        return userService.registerUser(request);
     }
 
     //get user by id
     @GetMapping("/{id}")
-    public UserEntity getUserById(@PathVariable Long id){
+    public UserResponseDto getUserById(@PathVariable Long id){
         return userService.getUserById(id);
     }
 
     //get all users
     @GetMapping
-    public List<UserEntity> getAllUsers(){
+    public List<UserResponseDto> getAllUsers(){
         return userService.getAllUsers();
     }
 

@@ -1,5 +1,6 @@
 package com.Project.TalentConnect.controllers;
 
+import com.Project.TalentConnect.DTO.OrderResponseDto;
 import com.Project.TalentConnect.entity.OrderEntity;
 import com.Project.TalentConnect.entity.OrderStatus;
 import com.Project.TalentConnect.services.OrderService;
@@ -16,26 +17,26 @@ public class OrderController {
 
     //place order
     @PostMapping("/gig/{gigId}/client/{clientId}")
-    public OrderEntity placeOrder(@PathVariable Long gigId,
-                                  @PathVariable Long clientId){
+    public OrderResponseDto placeOrder(@PathVariable Long gigId,
+                                       @PathVariable Long clientId){
         return orderService.placeOrder(gigId, clientId);
     }
 
     //get all orders
     @GetMapping
-    public List<OrderEntity> getAllOrders(){
+    public List<OrderResponseDto> getAllOrders(){
         return orderService.getAllOrders();
     }
 
     //get orders by client
     @GetMapping("/client/{clientId}")
-    public List<OrderEntity> getOrderByClient(@PathVariable Long clientId){
+    public List<OrderResponseDto> getOrderByClient(@PathVariable Long clientId){
         return orderService.getOrderByClient(clientId);
     }
 
     //update order
     @PatchMapping("/{orderId}/status")
-    public OrderEntity updateOrderStatus(@PathVariable Long orderId,
+    public OrderResponseDto updateOrderStatus(@PathVariable Long orderId,
                                          @RequestParam OrderStatus status){
         return orderService.updateOrderStatus(orderId, status);
     }

@@ -1,8 +1,11 @@
 package com.Project.TalentConnect.services;
 
+import com.Project.TalentConnect.DTO.UserRequestDto;
+import com.Project.TalentConnect.DTO.UserResponseDto;
 import com.Project.TalentConnect.entity.UserEntity;
 import com.Project.TalentConnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,26 +17,38 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
     //register new user
-    public UserEntity registerUser(UserEntity user){
-        if(userRepository.existsByEmail(user.getEmail())){
+    public UserResponseDto registerUser(UserRequestDto request){
+        if(userRepository.existsByEmail(request.getEmail())){
             throw new RuntimeException("Email already exists");
         }
-        user.setEnabled(true);
-        user.setCreatedAt(LocalDateTime.now());
-        return userRepository.save(user);
+      UserEntity user = modelMapper.map(request, UserEntity.class);
+
+      user.setEnabled(true);
+      user.setCreatedAt(LocalDateTime.now());
+
+      UserEntity savedUser = userRepository.save(user);
+
+      return modelMapper.map(savedUser, UserResponseDto.class);
     }
 
     //get user by id
-    public UserEntity getUserById(Long id){
-        return userRepository.findById(id)
+    public UserResponseDto getUserById(Long id){
+        UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return modelMapper.map(user, UserResponseDto.class);
     }
 
     //get all users
-    public List<UserEntity> getAllUsers(){
-        return userRepository.findAll();
+    public List<UserResponseDto> getAllUsers(){
+
+        return userRepository.findAll()
+                .stream()
+                .map(user -> modelMapper.map(user, UserResponseDto.class))
+                .toList();
     }
 
     //delete User

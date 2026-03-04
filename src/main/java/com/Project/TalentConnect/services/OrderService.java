@@ -1,5 +1,6 @@
 package com.Project.TalentConnect.services;
 
+import com.Project.TalentConnect.DTO.OrderResponseDto;
 import com.Project.TalentConnect.entity.GigEntity;
 import com.Project.TalentConnect.entity.OrderEntity;
 import com.Project.TalentConnect.entity.OrderStatus;
@@ -9,6 +10,8 @@ import com.Project.TalentConnect.repository.OrderRepository;
 import com.Project.TalentConnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,9 +24,10 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final GigRepository gigRepository;
+    private final ModelMapper modelMapper;
 
     //place order
-    public OrderEntity placeOrder(Long gigId, Long clientId){
+    public OrderResponseDto placeOrder(Long gigId, Long clientId){
 
         UserEntity client = userRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Client not found"));
@@ -39,29 +43,40 @@ public class OrderService {
                 .orderDate(LocalDateTime.now())
                 .build();
 
-        return orderRepository.save(order);
+        OrderEntity savedOrder = orderRepository.save(order);
+        return mapToResponse(savedOrder);
     }
 
     //get all orders
-    public List<OrderEntity> getAllOrders(){
-        return orderRepository.findAll();
+    public List<OrderResponseDto> getAllOrders(){
+
+        return orderRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     //get order by client
-    public List<OrderEntity> getOrderByClient(Long clientId){
+    public List<OrderResponseDto> getOrderByClient(Long clientId){
         UserEntity client = userRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Client not Found"));
 
-        return orderRepository.findByClient(client);
+        return orderRepository.findByClient(client)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     //update Order status
-    public OrderEntity updateOrderStatus(Long orderId, OrderStatus status){
+    public OrderResponseDto updateOrderStatus(Long orderId, OrderStatus status){
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not Found"));
 
         order.setStatus(status);
-        return orderRepository.save(order);
+
+        OrderEntity updatedOrder = orderRepository.save(order);
+
+        return mapToResponse(updatedOrder);
     }
 
     //delete order
@@ -72,5 +87,19 @@ public class OrderService {
 
         orderRepository.deleteById(orderId);
     }
+
+    private OrderResponseDto mapToResponse(OrderEntity order){
+        return OrderResponseDto.builder()
+                .id(order.getId())
+                .gigId(order.getGig().getId())
+                .gigTitle(order.getGig().getTitle())
+                .clientId(order.getClient().getId())
+                .clientName(order.getClient().getName())
+                .totalAmount(order.getTotalAmount())
+                .status(order.getStatus())
+                .orderDate(order.getOrderDate())
+                .build();
+    }
 }
+
 
