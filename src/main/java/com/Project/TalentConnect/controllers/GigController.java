@@ -54,4 +54,3 @@ public class GigController {
             return "Gig deleted Successfully";
         }
     }
-

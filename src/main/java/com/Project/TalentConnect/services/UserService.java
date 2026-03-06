@@ -5,6 +5,8 @@ import com.Project.TalentConnect.DTO.UserResponseDto;
 import com.Project.TalentConnect.entity.UserEntity;
 import com.Project.TalentConnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import com.Project.TalentConnect.exception.ResourceNotFoundException;
+import com.Project.TalentConnect.exception.BadRequestException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +24,7 @@ public class UserService {
     //register new user
     public UserResponseDto registerUser(UserRequestDto request){
         if(userRepository.existsByEmail(request.getEmail())){
-            throw new RuntimeException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
       UserEntity user = modelMapper.map(request, UserEntity.class);
 
@@ -37,7 +39,7 @@ public class UserService {
     //get user by id
     public UserResponseDto getUserById(Long id){
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         return modelMapper.map(user, UserResponseDto.class);
     }
@@ -53,14 +55,17 @@ public class UserService {
 
     //delete User
     public void deleteUser(Long id){
-        if(!userRepository.existsById(id)){
-            throw new RuntimeException("User not found");
-        }
-        userRepository.deleteById(id);
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        userRepository.delete(user);
     }
 
     //find user by email
     public Optional<UserEntity> findByEmail(String email){
+
         return userRepository.findByEmail(email);
     }
 }
+
+

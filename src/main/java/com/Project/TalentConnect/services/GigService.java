@@ -4,6 +4,7 @@ import com.Project.TalentConnect.DTO.GigRequestDto;
 import com.Project.TalentConnect.DTO.GigResponseDto;
 import com.Project.TalentConnect.entity.GigEntity;
 import com.Project.TalentConnect.entity.UserEntity;
+import com.Project.TalentConnect.exception.ResourceNotFoundException;
 import com.Project.TalentConnect.repository.GigRepository;
 import com.Project.TalentConnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class GigService {
     public GigResponseDto createGig(Long freelancerId, GigRequestDto request){
 
         UserEntity freelancer = userRepository.findById(freelancerId)
-                .orElseThrow(() -> new RuntimeException("Freelancer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Freelancer not found with id: " + freelancerId));
 
         GigEntity gig = modelMapper.map(request, GigEntity.class);
 
@@ -34,33 +35,33 @@ public class GigService {
 
         GigEntity savedGig = gigRepository.save(gig);
 
-        return maptoResponse(savedGig);
+        return mapToResponse(savedGig);
     }
 
     //get all gigs
     public List<GigResponseDto> getAllGigs(){
         return gigRepository.findAll()
                 .stream()
-                .map(this::maptoResponse)
+                .map(this::mapToResponse)
                 .toList();
     }
 
     //get gig by id
     public GigResponseDto getGigById(Long gigId){
         GigEntity gig = gigRepository.findById(gigId)
-                .orElseThrow(() -> new RuntimeException("Gig Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + gigId));
 
-        return maptoResponse(gig);
+        return mapToResponse(gig);
     }
 
-    //get gig by Freelancer
+    //get gig by freelancer
     public List<GigResponseDto> getGigsByFreelancer(Long freelancerId){
         UserEntity freelancer = userRepository.findById(freelancerId)
-                .orElseThrow(() -> new RuntimeException("Freelancer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Freelancer not found with id: " + freelancerId));
 
         return gigRepository.findByFreelancer(freelancer)
                 .stream()
-                .map(this::maptoResponse)
+                .map(this::mapToResponse)
                 .toList();
     }
 
@@ -68,19 +69,19 @@ public class GigService {
     public List<GigResponseDto> getGigsByCategory(String category){
         return gigRepository.findByCategory(category)
                 .stream()
-                .map(this::maptoResponse)
+                .map(this::mapToResponse)
                 .toList();
     }
 
     //delete a gig
     public void deleteGig(Long gigId){
-        if(!gigRepository.existsById(gigId)){
-            throw new RuntimeException("Gig not found");
-        }
-        gigRepository.deleteById(gigId);
+        GigEntity gig = gigRepository.findById(gigId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + gigId));
+
+        gigRepository.delete(gig);
     }
 
-    private GigResponseDto maptoResponse(GigEntity gig){
+    private GigResponseDto mapToResponse(GigEntity gig){
 
         return GigResponseDto.builder()
                 .id(gig.getId())
@@ -91,7 +92,8 @@ public class GigService {
                 .status(gig.getStatus())
                 .freelancerId(gig.getFreelancer().getId())
                 .freelancerName(gig.getFreelancer().getName())
-                .createdAt(LocalDateTime.now())
+                .createdAt(gig.getCreatedAt())
                 .build();
     }
 }
+

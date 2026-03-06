@@ -5,13 +5,13 @@ import com.Project.TalentConnect.entity.GigEntity;
 import com.Project.TalentConnect.entity.OrderEntity;
 import com.Project.TalentConnect.entity.OrderStatus;
 import com.Project.TalentConnect.entity.UserEntity;
+import com.Project.TalentConnect.exception.ResourceNotFoundException;
 import com.Project.TalentConnect.repository.GigRepository;
 import com.Project.TalentConnect.repository.OrderRepository;
 import com.Project.TalentConnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,16 +24,16 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final GigRepository gigRepository;
-    private final ModelMapper modelMapper;
+
 
     //place order
     public OrderResponseDto placeOrder(Long gigId, Long clientId){
 
         UserEntity client = userRepository.findById(clientId)
-                .orElseThrow(() -> new RuntimeException("Client not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + clientId));
 
         GigEntity gig = gigRepository.findById(gigId)
-                .orElseThrow(() -> new RuntimeException("Gig not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + gigId));
 
         OrderEntity order = OrderEntity.builder()
                 .client(client)
@@ -59,7 +59,7 @@ public class OrderService {
     //get order by client
     public List<OrderResponseDto> getOrderByClient(Long clientId){
         UserEntity client = userRepository.findById(clientId)
-                .orElseThrow(() -> new RuntimeException("Client not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + clientId));
 
         return orderRepository.findByClient(client)
                 .stream()
@@ -70,7 +70,7 @@ public class OrderService {
     //update Order status
     public OrderResponseDto updateOrderStatus(Long orderId, OrderStatus status){
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
         order.setStatus(status);
 
@@ -80,12 +80,11 @@ public class OrderService {
     }
 
     //delete order
-    public void deleteOrder(Long orderId){
-        if(!orderRepository.existsById(orderId)){
-            throw new RuntimeException("Order not found");
-        }
+    public void deleteOrder(Long orderId) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
-        orderRepository.deleteById(orderId);
+        orderRepository.delete(order);
     }
 
     private OrderResponseDto mapToResponse(OrderEntity order){
@@ -101,5 +100,6 @@ public class OrderService {
                 .build();
     }
 }
+
 
 
