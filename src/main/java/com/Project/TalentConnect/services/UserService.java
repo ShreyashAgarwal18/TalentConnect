@@ -29,7 +29,7 @@ public class UserService {
       UserEntity user = modelMapper.map(request, UserEntity.class);
 
       user.setEnabled(true);
-      user.setCreatedAt(LocalDateTime.now());
+
 
       UserEntity savedUser = userRepository.save(user);
 
@@ -55,10 +55,12 @@ public class UserService {
 
     //delete User
     public void deleteUser(Long id){
-        UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        userRepository.delete(user);
+        if(!userRepository.existsById(id)){
+            throw new ResourceNotFoundException("User not found with id: " + id);
+        }
+
+        userRepository.deleteById(id);
     }
 
     //find user by email
@@ -67,5 +69,7 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 }
+
+
 
 

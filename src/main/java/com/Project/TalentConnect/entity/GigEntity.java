@@ -1,13 +1,16 @@
 package com.Project.TalentConnect.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "GigTable")
+@Table(name = "gigs")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -34,9 +37,15 @@ public class GigEntity {
     @Enumerated(EnumType.STRING)
     private GigStatus status = GigStatus.ACTIVE;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "freelancer_id", nullable = false)
     private UserEntity freelancer;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @OneToMany(mappedBy = "gig", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<OrderEntity> orders = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 }

@@ -3,6 +3,7 @@ package com.Project.TalentConnect.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -42,6 +43,20 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //Method argument exception
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex){
+
+        String errorMessage = ex.getBindingResult()
+                .getFieldErrors()
+                .get(0)
+                .getDefaultMessage();
+
+        ErrorResponse error = new ErrorResponse(errorMessage, 400);
+
+        return ResponseEntity.badRequest().body(error);
     }
 }
 

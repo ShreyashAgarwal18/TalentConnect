@@ -1,5 +1,6 @@
 package com.Project.TalentConnect.services;
 
+import com.Project.TalentConnect.DTO.OrderRequestDto;
 import com.Project.TalentConnect.DTO.OrderResponseDto;
 import com.Project.TalentConnect.entity.GigEntity;
 import com.Project.TalentConnect.entity.OrderEntity;
@@ -11,10 +12,8 @@ import com.Project.TalentConnect.repository.OrderRepository;
 import com.Project.TalentConnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,20 +26,20 @@ public class OrderService {
 
 
     //place order
-    public OrderResponseDto placeOrder(Long gigId, Long clientId){
+    public OrderResponseDto placeOrder(OrderRequestDto request){
 
-        UserEntity client = userRepository.findById(clientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + clientId));
+        UserEntity client = userRepository.findById(request.getClientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + request.getClientId()));
 
-        GigEntity gig = gigRepository.findById(gigId)
-                .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + gigId));
+        GigEntity gig = gigRepository.findById(request.getGigId())
+                .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + request.getGigId()));
 
         OrderEntity order = OrderEntity.builder()
                 .client(client)
                 .gig(gig)
-                .totalAmount(gig.getPrice())
+                .totalAmount(request.getTotalAmount())
+                .deadline(request.getDeadline())
                 .status(OrderStatus.PENDING)
-                .orderDate(LocalDateTime.now())
                 .build();
 
         OrderEntity savedOrder = orderRepository.save(order);
@@ -81,10 +80,11 @@ public class OrderService {
 
     //delete order
     public void deleteOrder(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+       if(!orderRepository.existsById(orderId)){
+           throw new ResourceNotFoundException("Order not found with id: " + orderId);
+       }
 
-        orderRepository.delete(order);
+       orderRepository.deleteById(orderId);
     }
 
     private OrderResponseDto mapToResponse(OrderEntity order){
@@ -97,8 +97,10 @@ public class OrderService {
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .orderDate(order.getOrderDate())
+                .deadline(order.getDeadline())
                 .build();
     }
+
 }
 
 

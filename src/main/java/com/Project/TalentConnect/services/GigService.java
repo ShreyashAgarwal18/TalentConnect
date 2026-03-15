@@ -23,15 +23,15 @@ public class GigService {
     private final ModelMapper modelMapper;
 
     //create gig
-    public GigResponseDto createGig(Long freelancerId, GigRequestDto request){
+    public GigResponseDto createGig(GigRequestDto request){
 
-        UserEntity freelancer = userRepository.findById(freelancerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Freelancer not found with id: " + freelancerId));
+        UserEntity freelancer = userRepository.findById(request.getFreelancerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Freelancer not found with id: " + request.getFreelancerId()));
 
         GigEntity gig = modelMapper.map(request, GigEntity.class);
 
         gig.setFreelancer(freelancer);
-        gig.setCreatedAt(LocalDateTime.now());
+
 
         GigEntity savedGig = gigRepository.save(gig);
 
@@ -75,10 +75,11 @@ public class GigService {
 
     //delete a gig
     public void deleteGig(Long gigId){
-        GigEntity gig = gigRepository.findById(gigId)
-                .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + gigId));
+       if(!gigRepository.existsById(gigId)){
+           throw new ResourceNotFoundException("Gig not found with id: " + gigId);
+       }
 
-        gigRepository.delete(gig);
+       gigRepository.deleteById(gigId);
     }
 
     private GigResponseDto mapToResponse(GigEntity gig){

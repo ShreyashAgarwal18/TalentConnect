@@ -2,9 +2,11 @@ package com.Project.TalentConnect.controllers;
 
 import com.Project.TalentConnect.DTO.GigRequestDto;
 import com.Project.TalentConnect.DTO.GigResponseDto;
-import com.Project.TalentConnect.entity.GigEntity;
 import com.Project.TalentConnect.services.GigService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,40 +19,46 @@ public class GigController {
     private final GigService gigService;
 
     //create gig
-    @PostMapping("/freelancer/{freelancerId}")
-    public GigResponseDto createGig(@PathVariable Long freelancerId,
-                                    @RequestBody GigRequestDto gig){
-        return gigService.createGig(freelancerId,gig);
+    @PostMapping
+    public ResponseEntity<GigResponseDto> createGig(@Valid @RequestBody GigRequestDto request){
+        GigResponseDto response = gigService.createGig(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     //get all gigs
     @GetMapping
-    public List<GigResponseDto> getAllGigs(){
-        return gigService.getAllGigs();
+    public ResponseEntity<List<GigResponseDto>> getAllGigs(){
+
+        List<GigResponseDto> gigs = gigService.getAllGigs();
+        return ResponseEntity.ok(gigs);
     }
 
     //get gig by id
     @GetMapping("/{id}")
-    public GigResponseDto getGigById(@PathVariable Long id){
-        return gigService.getGigById(id);
+    public ResponseEntity<GigResponseDto> getGigById(@PathVariable Long id){
+
+        GigResponseDto gig = gigService.getGigById(id);
+        return ResponseEntity.ok(gig);
     }
 
     //get gig by freelancer
     @GetMapping("/freelancer/{freelancerId}")
-    public List<GigResponseDto> getGigsByFreelancer(@PathVariable Long freelancerId){
-        return gigService.getGigsByFreelancer(freelancerId);
+    public ResponseEntity<List<GigResponseDto>> getGigsByFreelancer(@PathVariable Long freelancerId){
+        List<GigResponseDto> gigs = gigService.getGigsByFreelancer(freelancerId);
+        return ResponseEntity.ok(gigs);
     }
 
     //get gig by category
     @GetMapping("/category/{category}")
-    public List<GigResponseDto> getGigsByCategory(@PathVariable String category){
-        return gigService.getGigsByCategory(category);
+    public ResponseEntity<List<GigResponseDto>> getGigsByCategory(@PathVariable String category){
+        List<GigResponseDto> gigs = gigService.getGigsByCategory(category);
+        return ResponseEntity.ok(gigs);
     }
 
     //delete gig
     @DeleteMapping("/{id}")
-    public String deleteGig(@PathVariable Long id){
+    public ResponseEntity<Void> deleteGig(@PathVariable Long id){
             gigService.deleteGig(id);
-            return "Gig deleted Successfully";
+            return ResponseEntity.noContent().build();
         }
     }
