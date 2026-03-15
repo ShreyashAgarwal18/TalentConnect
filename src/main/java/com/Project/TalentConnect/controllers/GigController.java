@@ -5,6 +5,7 @@ import com.Project.TalentConnect.DTO.GigResponseDto;
 import com.Project.TalentConnect.services.GigService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -61,4 +62,23 @@ public class GigController {
             gigService.deleteGig(id);
             return ResponseEntity.noContent().build();
         }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<GigResponseDto>> getGigsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ){
+        Page<GigResponseDto> gigs =
+                gigService.getAllGigsPaginated(page,size, sortBy, direction);
+
+        return ResponseEntity.ok(gigs);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<GigResponseDto>> search(@RequestParam String keyword){
+        List<GigResponseDto> gigs = gigService.search(keyword);
+        return ResponseEntity.ok(gigs);
+    }
     }

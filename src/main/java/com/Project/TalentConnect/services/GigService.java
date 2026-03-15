@@ -9,7 +9,13 @@ import com.Project.TalentConnect.repository.GigRepository;
 import com.Project.TalentConnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +36,7 @@ public class GigService {
 
         GigEntity gig = modelMapper.map(request, GigEntity.class);
 
+        gig.setId(null);
         gig.setFreelancer(freelancer);
 
 
@@ -75,12 +82,34 @@ public class GigService {
 
     //delete a gig
     public void deleteGig(Long gigId){
-       if(!gigRepository.existsById(gigId)){
-           throw new ResourceNotFoundException("Gig not found with id: " + gigId);
-       }
 
-       gigRepository.deleteById(gigId);
+        GigEntity gig = gigRepository.findById(gigId)
+                .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + gigId));
+
+        gigRepository.delete(gig);
     }
+
+    public Page<GigResponseDto> getAllGigsPaginated(int page, int size, String sortBy, String direction){
+
+        Sort sort = direction.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() :
+                Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<GigEntity> gigPage = gigRepository.findAll(pageable);
+
+        return gigPage.map(this::mapToResponse);
+    }
+
+    @GetMapping("/search")
+    public List<GigResponseDto> search(@RequestParam String keyword){
+        return gigRepository.search(keyword)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
 
     private GigResponseDto mapToResponse(GigEntity gig){
 
