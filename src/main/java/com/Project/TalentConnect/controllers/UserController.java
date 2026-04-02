@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,14 +29,15 @@ public class UserController {
     }
 
     //get user by id
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id){
-
-        UserResponseDto response = userService.getUserById(id);
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getCurrentUser(Authentication authentication){
+        String email = authentication.getName();
+        UserResponseDto response = userService.getUserByEmail(email);
         return ResponseEntity.ok(response);
     }
 
     //get all users
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAllUsers(){
 
@@ -43,6 +46,7 @@ public class UserController {
     }
 
     //delete User
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id){
         userService.deleteUser(id);

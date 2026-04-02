@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long>{
     List<OrderEntity> findByClient(UserEntity client);
+    List<OrderEntity> findByClientEmail(String email);
 }

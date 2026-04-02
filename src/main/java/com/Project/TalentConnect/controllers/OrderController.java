@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,13 +21,16 @@ public class OrderController {
     private final OrderService orderService;
 
     //place order
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
-    public ResponseEntity<OrderResponseDto> placeOrder(@Valid @RequestBody OrderRequestDto request){
-        OrderResponseDto response = orderService.placeOrder(request);
+    public ResponseEntity<OrderResponseDto> placeOrder(@Valid @RequestBody OrderRequestDto request, Authentication authentication){
+        String email = authentication.getName();
+        OrderResponseDto response = orderService.placeOrder(request,email);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     //get all orders
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<OrderResponseDto>> getAllOrders(){
 
@@ -34,13 +39,16 @@ public class OrderController {
     }
 
     //get orders by client
-    @GetMapping("/client/{clientId}")
-    public ResponseEntity<List<OrderResponseDto>> getOrderByClient(@PathVariable Long clientId){
-        List<OrderResponseDto> orders = orderService.getOrderByClient(clientId);
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/my-orders")
+    public ResponseEntity<List<OrderResponseDto>> getMyOrders(Authentication authentication){
+        String email = authentication.getName();
+        List<OrderResponseDto> orders = orderService.getOrdersByEmail(email);
         return ResponseEntity.ok(orders);
     }
 
     //update order
+    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<OrderResponseDto> updateOrderStatus(@PathVariable Long orderId,
                                          @RequestParam OrderStatus status){
@@ -49,6 +57,7 @@ public class OrderController {
     }
 
     //delete order
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{orderId}")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId){
         orderService.deleteOrder(orderId);

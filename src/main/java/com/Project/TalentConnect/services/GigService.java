@@ -14,10 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,10 +26,10 @@ public class GigService {
     private final ModelMapper modelMapper;
 
     //create gig
-    public GigResponseDto createGig(GigRequestDto request){
+    public GigResponseDto createGig(GigRequestDto request, String email){
 
-        UserEntity freelancer = userRepository.findById(request.getFreelancerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Freelancer not found with id: " + request.getFreelancerId()));
+        UserEntity freelancer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         GigEntity gig = modelMapper.map(request, GigEntity.class);
 
@@ -102,8 +99,8 @@ public class GigService {
         return gigPage.map(this::mapToResponse);
     }
 
-    @GetMapping("/search")
-    public List<GigResponseDto> search(@RequestParam String keyword){
+
+    public List<GigResponseDto> search(String keyword){
         return gigRepository.search(keyword)
                 .stream()
                 .map(this::mapToResponse)

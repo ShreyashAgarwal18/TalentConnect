@@ -26,10 +26,10 @@ public class OrderService {
 
 
     //place order
-    public OrderResponseDto placeOrder(OrderRequestDto request){
+    public OrderResponseDto placeOrder(OrderRequestDto request, String email){
 
-        UserEntity client = userRepository.findById(request.getClientId())
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + request.getClientId()));
+        UserEntity client = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Client not found with email: " + email));
 
         GigEntity gig = gigRepository.findById(request.getGigId())
                 .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + request.getGigId()));
@@ -55,16 +55,18 @@ public class OrderService {
                 .toList();
     }
 
-    //get order by client
-    public List<OrderResponseDto> getOrderByClient(Long clientId){
-        UserEntity client = userRepository.findById(clientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found with id: " + clientId));
+    //get order by email
+    public List<OrderResponseDto> getOrdersByEmail(String email){
+
+        UserEntity client = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         return orderRepository.findByClient(client)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
+
 
     //update Order status
     public OrderResponseDto updateOrderStatus(Long orderId, OrderStatus status){
@@ -86,6 +88,7 @@ public class OrderService {
 
        orderRepository.deleteById(orderId);
     }
+
 
     private OrderResponseDto mapToResponse(OrderEntity order){
         return OrderResponseDto.builder()

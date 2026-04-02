@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,9 +22,11 @@ public class GigController {
     private final GigService gigService;
 
     //create gig
-    @PostMapping
-    public ResponseEntity<GigResponseDto> createGig(@Valid @RequestBody GigRequestDto request){
-        GigResponseDto response = gigService.createGig(request);
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/create")
+    public ResponseEntity<GigResponseDto> createGig(@Valid @RequestBody GigRequestDto request, Authentication authentication){
+        String email = authentication.getName();
+        GigResponseDto response = gigService.createGig(request, email);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -57,6 +61,7 @@ public class GigController {
     }
 
     //delete gig
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGig(@PathVariable Long id){
             gigService.deleteGig(id);
