@@ -10,8 +10,11 @@ import com.Project.TalentConnect.exception.ResourceNotFoundException;
 import com.Project.TalentConnect.repository.GigRepository;
 import com.Project.TalentConnect.repository.OrderRepository;
 import com.Project.TalentConnect.repository.UserRepository;
+
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import com.Project.TalentConnect.exception.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +29,7 @@ public class OrderService {
 
 
     //place order
+    @Transactional
     public OrderResponseDto placeOrder(OrderRequestDto request, String email){
 
         UserEntity client = userRepository.findByEmail(email)
@@ -69,24 +73,32 @@ public class OrderService {
 
 
     //update Order status
-    public OrderResponseDto updateOrderStatus(Long orderId, OrderStatus status){
+    @Transactional
+    public OrderResponseDto updateOrderStatus(Long orderId, OrderStatus status, String callerEmail){
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
+
+        if(!order.getClient().getEmail().equals(callerEmail)){
+                throw new BadRequestException("You are not authorized to update this order");
+        }        
+
         order.setStatus(status);
-
-        OrderEntity updatedOrder = orderRepository.save(order);
-
-        return mapToResponse(updatedOrder);
+        return mapToResponse(orderRepository.save(order));
     }
 
     //delete order
-    public void deleteOrder(Long orderId) {
-       if(!orderRepository.existsById(orderId)){
-           throw new ResourceNotFoundException("Order not found with id: " + orderId);
+    @Transactional
+    public void deleteOrder(Long orderId, String callerEmail) {
+        OrderEntity order = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+
+       if(!order.getClient().getEmail().equals(callerEmail)){
+           throw new BadRequestException("You are not authorized to delete this order");
        }
 
-       orderRepository.deleteById(orderId);
+       orderRepository.delete(order);
     }
 
 

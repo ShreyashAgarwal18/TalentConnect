@@ -22,7 +22,7 @@ public class GigController {
     private final GigService gigService;
 
     //create gig
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('FREELANCER')")
     @PostMapping("/create")
     public ResponseEntity<GigResponseDto> createGig(@Valid @RequestBody GigRequestDto request, Authentication authentication){
         String email = authentication.getName();
@@ -61,10 +61,10 @@ public class GigController {
     }
 
     //delete gig
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('FREELANCER')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGig(@PathVariable Long id){
-            gigService.deleteGig(id);
+    public ResponseEntity<Void> deleteGig(@PathVariable Long id, Authentication authentication){
+            gigService.deleteGig(id, authentication.getName());
             return ResponseEntity.noContent().build();
         }
 

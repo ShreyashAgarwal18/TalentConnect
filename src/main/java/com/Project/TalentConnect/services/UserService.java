@@ -11,6 +11,7 @@ import com.Project.TalentConnect.exception.BadRequestException;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class UserService {
 
 
     //register new user
+    @Transactional
     public UserResponseDto registerUser(UserRequestDto request){
         if(userRepository.existsByEmail(request.getEmail())){
             throw new BadRequestException("Email already exists");
@@ -72,6 +74,7 @@ public class UserService {
     }
 
     //delete User
+    @Transactional
     public void deleteUser(Long id){
 
         if(!userRepository.existsById(id)){

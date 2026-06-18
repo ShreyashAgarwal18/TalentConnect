@@ -51,16 +51,17 @@ public class OrderController {
     @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<OrderResponseDto> updateOrderStatus(@PathVariable Long orderId,
-                                         @RequestParam OrderStatus status){
-        OrderResponseDto response = orderService.updateOrderStatus(orderId, status);
+                                         @RequestParam OrderStatus status,
+                                        Authentication authentication){
+        OrderResponseDto response = orderService.updateOrderStatus(orderId, status, authentication.getName());
         return ResponseEntity.ok(response);
     }
 
     //delete order
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId){
-        orderService.deleteOrder(orderId);
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId, Authentication authentication){
+        orderService.deleteOrder(orderId, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }

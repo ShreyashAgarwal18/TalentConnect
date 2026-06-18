@@ -4,6 +4,7 @@ import com.Project.TalentConnect.DTO.GigRequestDto;
 import com.Project.TalentConnect.DTO.GigResponseDto;
 import com.Project.TalentConnect.entity.GigEntity;
 import com.Project.TalentConnect.entity.UserEntity;
+import com.Project.TalentConnect.exception.BadRequestException;
 import com.Project.TalentConnect.exception.ResourceNotFoundException;
 import com.Project.TalentConnect.repository.GigRepository;
 import com.Project.TalentConnect.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class GigService {
     private final ModelMapper modelMapper;
 
     //create gig
+    @Transactional
     public GigResponseDto createGig(GigRequestDto request, String email){
 
         UserEntity freelancer = userRepository.findByEmail(email)
@@ -78,11 +81,15 @@ public class GigService {
     }
 
     //delete a gig
-    public void deleteGig(Long gigId){
+    @Transactional
+    public void deleteGig(Long gigId, String callerEmail){
 
         GigEntity gig = gigRepository.findById(gigId)
                 .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + gigId));
 
+        if(!gig.getFreelancer().getEmail().equals(callerEmail)){
+            throw new BadRequestException("You are not authorized to delete this gig");
+        }
         gigRepository.delete(gig);
     }
 

@@ -25,8 +25,7 @@ public class GigRequestDto {
     @NotNull(message = "Status is required")
     private GigStatus status;
 
-    @NotNull(message = "Freelancer Id is required")
-    private Long freelancerId;
+    
 
 }
 
