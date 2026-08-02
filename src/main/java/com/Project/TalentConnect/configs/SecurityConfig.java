@@ -54,14 +54,16 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
-                    "/api/gigs",
-                    "/api/gigs/paginated",
-                    "/api/gigs/search",
-                    "/api/gigs/{id}",
-                    "/api/gigs/category/**",
-                    "/api/gigs/freelancer/**"
-                ).permitAll()
-                .anyRequest().authenticated()
+                             "/api/gigs",
+                             "/api/gigs/paginated",
+                             "/api/gigs/search",
+                             "/api/gigs/{id}",
+                             "/api/gigs/category/**",
+                             "/api/gigs/freelancer/**"
+                        ).permitAll()
+                        .requestMatchers("/api/reviews/gig/**", "/api/reviews/freelancer/**").permitAll()
+                        .anyRequest().authenticated()
+
             );
 
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

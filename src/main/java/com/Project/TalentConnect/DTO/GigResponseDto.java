@@ -23,6 +23,7 @@ public class GigResponseDto {
     private Long freelancerId;
     private String freelancerName;
     private LocalDateTime createdAt;
+    private Double averageRating;
 }
 
 

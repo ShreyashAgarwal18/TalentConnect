@@ -41,16 +41,27 @@ public class OrderService {
         OrderEntity order = OrderEntity.builder()
                 .client(client)
                 .gig(gig)
-                .totalAmount(request.getTotalAmount())
+                .totalAmount(gig.getPrice())
                 .deadline(request.getDeadline())
                 .status(OrderStatus.PENDING)
                 .build();
 
         OrderEntity savedOrder = orderRepository.save(order);
-        return mapToResponse(savedOrder);
+        return OrderResponseDto.builder()
+        .id(savedOrder.getId())
+        .gigId(gig.getId())
+        .gigTitle(gig.getTitle())
+        .clientId(client.getId())
+        .clientName(client.getName())
+        .totalAmount(savedOrder.getTotalAmount())
+        .status(savedOrder.getStatus())
+        .orderDate(savedOrder.getOrderDate())
+        .deadline(savedOrder.getDeadline())
+        .build();
     }
 
     //get all orders
+    @Transactional(readOnly = true)
     public List<OrderResponseDto> getAllOrders(){
 
         return orderRepository.findAll()
@@ -60,6 +71,7 @@ public class OrderService {
     }
 
     //get order by email
+    @Transactional(readOnly = true)
     public List<OrderResponseDto> getOrdersByEmail(String email){
 
         UserEntity client = userRepository.findByEmail(email)

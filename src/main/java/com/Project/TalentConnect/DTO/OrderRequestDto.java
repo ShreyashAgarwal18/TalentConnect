@@ -1,7 +1,7 @@
 package com.Project.TalentConnect.DTO;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,9 +13,7 @@ public class OrderRequestDto {
     private Long gigId;
 
     
-    @NotNull(message = "Total amount is required")
-    @Positive(message = "Total amount must be greater than 0")
-    private Double totalAmount;
+ 
 
     private LocalDateTime deadline;
 }

@@ -7,6 +7,7 @@ import com.Project.TalentConnect.entity.UserEntity;
 import com.Project.TalentConnect.exception.BadRequestException;
 import com.Project.TalentConnect.exception.ResourceNotFoundException;
 import com.Project.TalentConnect.repository.GigRepository;
+import com.Project.TalentConnect.repository.ReviewRepository;
 import com.Project.TalentConnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -26,6 +27,7 @@ public class GigService {
     private final GigRepository gigRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private  final ReviewRepository reviewRepository;
 
     //create gig
     @Transactional
@@ -46,6 +48,7 @@ public class GigService {
     }
 
     //get all gigs
+    @Transactional(readOnly = true)
     public List<GigResponseDto> getAllGigs(){
         return gigRepository.findAll()
                 .stream()
@@ -54,6 +57,7 @@ public class GigService {
     }
 
     //get gig by id
+    @Transactional(readOnly = true)
     public GigResponseDto getGigById(Long gigId){
         GigEntity gig = gigRepository.findById(gigId)
                 .orElseThrow(() -> new ResourceNotFoundException("Gig not found with id: " + gigId));
@@ -62,6 +66,7 @@ public class GigService {
     }
 
     //get gig by freelancer
+    @Transactional(readOnly = true)
     public List<GigResponseDto> getGigsByFreelancer(Long freelancerId){
         UserEntity freelancer = userRepository.findById(freelancerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Freelancer not found with id: " + freelancerId));
@@ -73,6 +78,7 @@ public class GigService {
     }
 
     //get gig by category
+    @Transactional(readOnly = true)
     public List<GigResponseDto> getGigsByCategory(String category){
         return gigRepository.findByCategory(category)
                 .stream()
@@ -93,6 +99,7 @@ public class GigService {
         gigRepository.delete(gig);
     }
 
+    @Transactional(readOnly = true)
     public Page<GigResponseDto> getAllGigsPaginated(int page, int size, String sortBy, String direction){
 
         Sort sort = direction.equalsIgnoreCase("desc") ?
@@ -107,6 +114,7 @@ public class GigService {
     }
 
 
+    @Transactional(readOnly = true)
     public List<GigResponseDto> search(String keyword){
         return gigRepository.search(keyword)
                 .stream()
@@ -127,6 +135,7 @@ public class GigService {
                 .freelancerId(gig.getFreelancer().getId())
                 .freelancerName(gig.getFreelancer().getName())
                 .createdAt(gig.getCreatedAt())
+                .averageRating(reviewRepository.findAverageRatingByGigId(gig.getId()))
                 .build();
     }
 }
