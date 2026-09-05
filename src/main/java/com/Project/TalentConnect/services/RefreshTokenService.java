@@ -22,6 +22,7 @@ public class RefreshTokenService {
 
     private final long REFRESH_TOKEN_DURATION = 7*24*60*60; //7 days
 
+    @Transactional 
     public RefreshToken createRefreshToken(String email){
 
         UserEntity user = userRepository.findByEmail(email)
@@ -29,6 +30,7 @@ public class RefreshTokenService {
 
         //delete old token
         refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.flush();
 
         RefreshToken token = new RefreshToken();
         token.setUser(user);
