@@ -36,6 +36,6 @@ public class ReviewController {
 
     @GetMapping("/freelancer/{freelancerId}")
     public ResponseEntity<List<ReviewResponseDto>> getReviewsByFreelancer(@PathVariable Long freelancerId){
-        return ResponseEntity.ok(reviewService.getReviewsByGig(freelancerId));
+        return ResponseEntity.ok(reviewService.getReviewsByFreelancer(freelancerId));
     }
 }

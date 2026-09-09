@@ -36,11 +36,10 @@ public class UserService {
       user.setPassword(passwordEncoder.encode(request.getPassword()));
       user.setEnabled(true);
 
-        if (request.getRole() == null) {
-            user.setRole(Role.CLIENT);
-        } else {
-            user.setRole(request.getRole());
+        if (request.getRole() == Role.ADMIN) {
+            throw new BadRequestException("Cannot self-register as ADMIN");
         }
+        user.setRole(request.getRole() == null ? Role.CLIENT : request.getRole());
 
       UserEntity savedUser = userRepository.save(user);
 
@@ -75,12 +74,19 @@ public class UserService {
 
     //delete User
     @Transactional
-    public void deleteUser(Long id){
+    public void deleteUser(Long id, String callerEmail){
+        UserEntity target = userRepository.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        if(!userRepository.existsById(id)){
-            throw new ResourceNotFoundException("User not found with id: " + id);
+        UserEntity caller = userRepository.findByEmail(callerEmail)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + callerEmail));
+
+        boolean isSelf = target.getEmail().equalsIgnoreCase(callerEmail);
+        boolean isAdmin = caller.getRole() == Role.ADMIN;
+
+        if(!isSelf && !isAdmin){
+            throw new BadRequestException("You are not authorized to delete this user");
         }
-
         userRepository.deleteById(id);
     }
 

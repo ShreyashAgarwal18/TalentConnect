@@ -48,8 +48,8 @@ public class UserController {
     //delete User
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id){
-        userService.deleteUser(id);
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication){
+        userService.deleteUser(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }

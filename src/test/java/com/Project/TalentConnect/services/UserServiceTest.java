@@ -4,6 +4,7 @@ import com.Project.TalentConnect.DTO.UserRequestDto;
 import com.Project.TalentConnect.DTO.UserResponseDto;
 import com.Project.TalentConnect.entity.UserEntity;
 import com.Project.TalentConnect.exception.BadRequestException;
+import com.Project.TalentConnect.exception.ResourceNotFoundException;
 import com.Project.TalentConnect.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,9 +60,46 @@ class UserServiceTest {
 
     @Test
     void deleteUser_ShouldThrow_WhenUserNotFound() {
-        when(userRepository.existsById(99L)).thenReturn(false);
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(Exception.class, () -> userService.deleteUser(99L));
+        assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser(99L, "caller@test.com"));
         verify(userRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteUser_ShouldSucceed_WhenCallerDeletesSelf() {
+        UserEntity self = UserEntity.builder().id(1L).email("self@test.com").role(com.Project.TalentConnect.entity.Role.CLIENT).build();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(self));
+        when(userRepository.findByEmail("self@test.com")).thenReturn(Optional.of(self));
+
+        userService.deleteUser(1L, "self@test.com");
+
+        verify(userRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteUser_ShouldThrow_WhenCallerIsNeitherOwnerNorAdmin() {
+        UserEntity target = UserEntity.builder().id(1L).email("target@test.com").role(com.Project.TalentConnect.entity.Role.CLIENT).build();
+        UserEntity caller = UserEntity.builder().id(2L).email("caller@test.com").role(com.Project.TalentConnect.entity.Role.CLIENT).build();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(target));
+        when(userRepository.findByEmail("caller@test.com")).thenReturn(Optional.of(caller));
+
+        assertThrows(BadRequestException.class, () -> userService.deleteUser(1L, "caller@test.com"));
+        verify(userRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteUser_ShouldSucceed_WhenCallerIsAdmin() {
+        UserEntity target = UserEntity.builder().id(1L).email("target@test.com").role(com.Project.TalentConnect.entity.Role.CLIENT).build();
+        UserEntity admin = UserEntity.builder().id(2L).email("admin@test.com").role(com.Project.TalentConnect.entity.Role.ADMIN).build();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(target));
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(admin));
+
+        userService.deleteUser(1L, "admin@test.com");
+
+        verify(userRepository).deleteById(1L);
     }
 }
